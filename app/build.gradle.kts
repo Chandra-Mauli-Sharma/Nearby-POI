@@ -7,7 +7,8 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlinAndroid)
     alias(libs.plugins.mapSecretGradlePlugin)
-    alias(libs.plugins.ksp)
+    alias(libs.plugins.kapt)
+    alias(libs.plugins.daggerHiltAndroid)
 }
 
 
@@ -30,7 +31,7 @@ android {
         val localProperties = Properties()
         localProperties.load(FileInputStream(localPropertiesFile))
 
-        buildConfigField("String", "MAPS_API_KEY", localProperties.getProperty("MAPS_API_KEY"))
+        buildConfigField("String", "MAPS_API_KEY", localProperties.getProperty("MAPS_API_KEY").toString())
     }
 
     buildTypes {
@@ -72,6 +73,7 @@ dependencies {
     implementation(libs.ui.graphics)
     implementation(libs.ui.tooling.preview)
     implementation(libs.material3)
+    implementation(libs.play.services.location)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.espresso.core)
@@ -87,7 +89,10 @@ dependencies {
     implementation(libs.converter.gson)
     implementation(libs.hilt.android)
     implementation(libs.androidx.hilt.navigation.compose)
-    ksp(libs.hilt.compiler)
-    ksp (libs.hilt.android.compiler)
+    kapt(libs.hilt.compiler)
+    kapt(libs.hilt.android.compiler)
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.coil.compose)
+    implementation(libs.gson)
+    runtimeOnly("androidx.compose.material:material-icons-extended:1.5.0-alpha04")
 }

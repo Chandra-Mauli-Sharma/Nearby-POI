@@ -1,5 +1,12 @@
 package com.example.nearbypoi.model
 
+import com.example.nearbypoi.model.place_details.Geometry
+import com.example.nearbypoi.model.place_details.Location
+import com.example.nearbypoi.model.place_details.OpeningHours
+import com.example.nearbypoi.model.place_details.Photo
+import com.example.nearbypoi.model.place_details.PlusCode
+import com.example.nearbypoi.model.place_details.Result
+import com.example.nearbypoi.model.place_details.Viewport
 import com.google.gson.JsonArray
 import com.google.gson.annotations.SerializedName
 

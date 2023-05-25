@@ -1,6 +1,8 @@
 [versions]
 accompanist-permissions = "0.31.2-alpha"
 agp = "8.2.0-alpha04"
+coil-compose = "2.4.0"
+gson = "2.10.1"
 hilt-android = "2.45"
 hilt-navigation-compose = "1.0.0"
 kotlin = "1.8.10"
@@ -21,8 +23,10 @@ retrofit = "2.9.0"
 accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanist-permissions" }
 androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hilt-navigation-compose" }
 androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "material-icons-extended" }
+coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil-compose" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit" }
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt-android" }
 hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hilt-android" }
 hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hilt-android" }
@@ -43,12 +47,15 @@ ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview
 ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 material3 = { group = "androidx.compose.material3", name = "material3", version = "1.2.0-alpha01" }
+play-services-location = { group = "com.google.android.gms", name = "play-services-location", version = "21.0.1" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 mapSecretGradlePlugin = { id = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin", version = "2.0.1" }
+kapt={id="org.jetbrains.kotlin.kapt",version="1.8.10"}
 ksp = { id = "com.google.devtools.ksp", version = "1.8.10-1.0.9" }
+daggerHiltAndroid={id="com.google.dagger.hilt.android",version="2.44"}
 
 [bundles]
 
