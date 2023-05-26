@@ -39,8 +39,7 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    private var locationCallback: LocationCallback? = null
-    var fusedLocationClient: FusedLocationProviderClient? = null
+
     private var locationRequired = false
     override fun onCreate(savedInstanceState: Bundle?) {
         mainActivity = this
@@ -52,100 +51,12 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    val context = LocalContext.current
-                    var currentLocation by remember {
-                        mutableStateOf(LatLng(0.0, 0.0))
-                    }
-                    val launcherMultiplePermissions = rememberLauncherForActivityResult(
-                        ActivityResultContracts.RequestMultiplePermissions()
-                    ) { permissionsMap ->
-                        val areGranted = permissionsMap.values.reduce { acc, next -> acc && next }
-                        if (areGranted) {
-                            locationRequired = true
-                            startLocationUpdates(context)
-                            Toast.makeText(context, "Permission Granted", Toast.LENGTH_SHORT).show()
-                        } else {
-                            Toast.makeText(context, "Permission Denied", Toast.LENGTH_SHORT).show()
-                        }
-                    }
 
-                    val permissions = arrayOf(
-                        Manifest.permission.ACCESS_COARSE_LOCATION,
-                        Manifest.permission.ACCESS_FINE_LOCATION
-                    )
-                    LaunchedEffect(Unit) {
-                        if (permissions.all {
-                                ContextCompat.checkSelfPermission(
-                                    context,
-                                    it
-                                ) == PackageManager.PERMISSION_GRANTED
-                            }) {
-                            startLocationUpdates(context)
-                        } else {
-                            launcherMultiplePermissions.launch(permissions)
-                        }
-                        fusedLocationClient =
-                            LocationServices.getFusedLocationProviderClient(context)
-                        locationCallback = object : LocationCallback() {
-                            override fun onLocationResult(p0: LocationResult) {
-                                for (lo in p0.locations) {
-                                    currentLocation = LatLng(lo.latitude, lo.longitude)
-                                    val pref =
-                                        context.getSharedPreferences("my_shared", MODE_PRIVATE)
-                                    pref.edit().putFloat("lat", lo.latitude.toFloat()).apply()
-                                    pref.edit().putFloat("long", lo.longitude.toFloat()).apply()
-                                }
-                            }
-                        }
-                    }
-                    if (permissions.all {
-                            ContextCompat.checkSelfPermission(
-                                context,
-                                it
-                            ) == PackageManager.PERMISSION_GRANTED
-                        }) {
-                        NearbyScreen(modifier = Modifier)
-                    }
+                    NearbyScreen(modifier = Modifier)
                 }
             }
         }
     }
-
-    private fun startLocationUpdates(context: Context) {
-        locationCallback?.let {
-            val locationRequest =
-                LocationRequest.Builder(Priority.PRIORITY_BALANCED_POWER_ACCURACY, 10000).build()
-            if (ActivityCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.ACCESS_FINE_LOCATION
-                ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                return
-            }
-            fusedLocationClient?.requestLocationUpdates(
-                locationRequest,
-                it,
-                Looper.getMainLooper()
-            )
-        }
-    }
-
-
-    override fun onResume() {
-        super.onResume()
-        if (locationRequired) {
-            startLocationUpdates(this)
-        }
-    }
-
-    override fun onPause() {
-        super.onPause()
-        locationCallback?.let { fusedLocationClient?.removeLocationUpdates(it) }
-    }
-
 
     companion object {
         var mainActivity: MainActivity? = null

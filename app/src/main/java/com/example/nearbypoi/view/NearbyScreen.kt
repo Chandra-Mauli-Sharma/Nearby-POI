@@ -1,7 +1,14 @@
 package com.example.nearbypoi.view
 
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
+import android.os.Looper
+import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideIn
 import androidx.compose.foundation.Image
@@ -24,6 +31,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowOutward
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.BottomSheetScaffold
@@ -56,6 +64,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -63,6 +73,13 @@ import com.example.nearbypoi.BuildConfig
 import com.example.nearbypoi.ui.theme.Orange
 import com.example.nearbypoi.util.Constants
 import com.example.nearbypoi.viewmodel.NearbyViewModel
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
+import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.PointOfInterest
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
@@ -72,25 +89,51 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
 import kotlinx.coroutines.launch
 
+private var locationCallback: LocationCallback? = null
+var fusedLocationClient: FusedLocationProviderClient? = null
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NearbyScreen(modifier: Modifier, viewModel: NearbyViewModel = hiltViewModel()) {
-    var uiSettings by remember { mutableStateOf(MapUiSettings()) }
-    uiSettings = uiSettings.copy(zoomControlsEnabled = false, myLocationButtonEnabled = true)
+fun NearbyScreen(
+    modifier: Modifier,
+    viewModel: NearbyViewModel = hiltViewModel()
+) {
+    val context = LocalContext.current
+    val permissions = arrayOf(
+        Manifest.permission.ACCESS_COARSE_LOCATION,
+        Manifest.permission.ACCESS_FINE_LOCATION
+    )
+    var isLocRequired by remember {
+        mutableStateOf(permissions.all {
+            ContextCompat.checkSelfPermission(
+                context,
+                it
+            ) == PackageManager.PERMISSION_GRANTED
+        })
+    }
+
+    var uiSettings by remember {
+        mutableStateOf(
+            MapUiSettings(
+                zoomControlsEnabled = false,
+                myLocationButtonEnabled = isLocRequired
+            )
+        )
+    }
+
 
     val modalSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = false,
         confirmValueChange = { it != SheetValue.PartiallyExpanded },
     )
 
-    val properties by remember {
+    var properties by remember {
         mutableStateOf(
             MapProperties(
                 mapType = MapType.NORMAL,
                 isIndoorEnabled = true,
                 isBuildingEnabled = true,
-                isMyLocationEnabled = true
+                isMyLocationEnabled = isLocRequired
             )
         )
     }
@@ -105,12 +148,60 @@ fun NearbyScreen(modifier: Modifier, viewModel: NearbyViewModel = hiltViewModel(
     var searchSelected by remember {
         mutableStateOf(false)
     }
-    val context= LocalContext.current
 
     LaunchedEffect(key1 = Unit, block = {
         val pref =
             context.getSharedPreferences("my_shared", ComponentActivity.MODE_PRIVATE)
     })
+
+    var currentLocation by remember {
+        mutableStateOf(LatLng(0.0, 0.0))
+    }
+    val launcherMultiplePermissions = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissionsMap ->
+        val areGranted = permissionsMap.values.reduce { acc, next -> acc && next }
+        if (areGranted) {
+            startLocationUpdates(context)
+            Toast.makeText(context, "Permission Granted", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(context, "Permission Denied", Toast.LENGTH_SHORT).show()
+        }
+    }
+    LaunchedEffect(isLocRequired) {
+        if (isLocRequired) {
+            if (permissions.all {
+                    ContextCompat.checkSelfPermission(
+                        context,
+                        it
+                    ) == PackageManager.PERMISSION_GRANTED
+                }) {
+                startLocationUpdates(context)
+            } else {
+                launcherMultiplePermissions.launch(permissions)
+                isLocRequired = true
+                uiSettings=uiSettings.copy(myLocationButtonEnabled = true)
+                properties=properties.copy(isMyLocationEnabled = true)
+
+            }
+            fusedLocationClient =
+                LocationServices.getFusedLocationProviderClient(context)
+            locationCallback = object : LocationCallback() {
+                override fun onLocationResult(p0: LocationResult) {
+                    for (lo in p0.locations) {
+                        currentLocation = LatLng(lo.latitude, lo.longitude)
+                        val pref =
+                            context.getSharedPreferences(
+                                "my_shared",
+                                ComponentActivity.MODE_PRIVATE
+                            )
+                        pref.edit().putFloat("lat", lo.latitude.toFloat()).apply()
+                        pref.edit().putFloat("long", lo.longitude.toFloat()).apply()
+                    }
+                }
+            }
+        }
+    }
 
     BottomSheetScaffold(
         sheetContent = {
@@ -169,7 +260,7 @@ fun NearbyScreen(modifier: Modifier, viewModel: NearbyViewModel = hiltViewModel(
                 modifier = modifier.fillMaxWidth()
             ) {
                 this@Column.AnimatedVisibility(visible = searchSelected) {
-                    IconButton(onClick = { searchSelected=!searchSelected }) {
+                    IconButton(onClick = { searchSelected = !searchSelected }) {
                         Icon(imageVector = Icons.Default.Close, contentDescription = null)
                     }
                 }
@@ -178,15 +269,19 @@ fun NearbyScreen(modifier: Modifier, viewModel: NearbyViewModel = hiltViewModel(
                     label = { Text(text = "Search") },
                     onValueChange = viewModel::onQueryStringChanged,
                     enabled = searchSelected,
-                    modifier=modifier.clickable { searchSelected=!searchSelected },
-                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Orange, focusedLabelColor = Orange, cursorColor = Orange)
+                    modifier = modifier.clickable { searchSelected = !searchSelected },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Orange,
+                        focusedLabelColor = Orange,
+                        cursorColor = Orange
+                    )
                 )
                 IconButton(
-                    onClick = { /*TODO*/ },
+                    onClick = { isLocRequired = true },
                     colors = IconButtonDefaults.filledIconButtonColors(containerColor = Orange)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Search,
+                        imageVector = if (isLocRequired) Icons.Default.Search else Icons.Default.MyLocation,
                         contentDescription = null,
                         tint = Color.White
                     )
@@ -212,12 +307,14 @@ fun NearbyScreen(modifier: Modifier, viewModel: NearbyViewModel = hiltViewModel(
                     LazyColumn(
                         modifier
                             .background(color = Color.White)
-                            .fillMaxSize()){
-                        items(query?.predictions?: listOf()){
+                            .fillMaxSize()
+                    ) {
+                        items(query?.predictions ?: listOf()) {
                             Row(
                                 modifier
                                     .fillMaxWidth()
-                                    .padding(20.dp)) {
+                                    .padding(20.dp)
+                            ) {
                                 Icon(
                                     imageVector = Icons.Default.ArrowOutward,
                                     contentDescription = null
@@ -229,5 +326,29 @@ fun NearbyScreen(modifier: Modifier, viewModel: NearbyViewModel = hiltViewModel(
                 }
             }
         }
+    }
+
+
+}
+
+private fun startLocationUpdates(context: Context) {
+    locationCallback?.let {
+        val locationRequest =
+            LocationRequest.Builder(Priority.PRIORITY_BALANCED_POWER_ACCURACY, 10000).build()
+        if (ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            return
+        }
+        fusedLocationClient?.requestLocationUpdates(
+            locationRequest,
+            it,
+            Looper.getMainLooper()
+        )
     }
 }
