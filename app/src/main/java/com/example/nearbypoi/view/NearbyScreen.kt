@@ -96,6 +96,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMapOptions
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.PointOfInterest
 import com.google.maps.android.compose.GoogleMap
@@ -145,7 +146,6 @@ fun NearbyScreen(
             MapUiSettings(
                 zoomControlsEnabled = false,
                 myLocationButtonEnabled = false,
-                mapToolbarEnabled = true
             )
         )
     }
@@ -156,7 +156,7 @@ fun NearbyScreen(
                 mapType = MapType.NORMAL,
                 isIndoorEnabled = true,
                 isBuildingEnabled = true,
-                isMyLocationEnabled = permissionGranted
+                isMyLocationEnabled = permissionGranted,
             )
         )
     }
@@ -344,7 +344,7 @@ fun NearbyScreen(
                                     placeDetail!!.result.name
                                 )
                             )
-                            return@Marker true
+                            return@Marker false
                         })
                     }
                 }
