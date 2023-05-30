@@ -1,7 +1,7 @@
 # Nearby POI
 ## Demo
+<img src="https://github.com/Chandra-Mauli-Sharma/Nearby-POI/assets/75089529/084c1036-9863-4864-b943-25a21fe4ea27" width="20%" height="20%"/>
 
-Insert gif or link to demo
 ## Run Locally
 
 Clone the project
@@ -27,8 +27,9 @@ In terminal use
 to build the Module
 ## Screenshots
 
-![App Screenshot](screenshot/Screenshot_20230526_185848.png)
+![Screenshots](https://github.com/Chandra-Mauli-Sharma/Nearby-POI/assets/75089529/c0efb64a-351b-42ea-ba3f-c88b80477861)
 
+<a href="https://drive.google.com/file/d/1ah_-F4-qD76PKhLpynf6w9vabb7WYQTS/view?usp=sharing">App Link</a>
 
 ## Highlights
 
