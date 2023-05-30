@@ -1,12 +1,5 @@
 package com.example.nearbypoi.model.place_details
 
-import com.example.nearbypoi.model.Geometry
-import com.example.nearbypoi.model.Location
-import com.example.nearbypoi.model.OpeningHours
-import com.example.nearbypoi.model.Photo
-import com.example.nearbypoi.model.PlusCode
-import com.example.nearbypoi.model.Result
-import com.example.nearbypoi.model.Viewport
 import com.google.gson.JsonArray
 import com.google.gson.annotations.SerializedName
 
@@ -61,14 +54,14 @@ data class Result (
     @SerializedName("plus_code")
     val plusCode: PlusCode,
 
-    val rating: Long,
+    val rating: Double,
     val reference: String,
     val reviews: List<Review>,
     val types: List<String>,
     val url: String,
 
     @SerializedName("user_ratings_total")
-    val userRatingsTotal: Long,
+    val userRatingsTotal: Double,
 
     @SerializedName("utc_offset")
     val utcOffset: Long,
@@ -164,7 +157,7 @@ data class Review (
     @SerializedName("profile_photo_url")
     val profilePhotourl: String,
 
-    val rating: Long,
+    val rating: Float,
 
     @SerializedName("relative_time_description")
     val relativeTimeDescription: String,

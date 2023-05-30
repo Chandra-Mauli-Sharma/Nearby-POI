@@ -18,7 +18,10 @@ data class Prediction (
     @SerializedName("structured_formatting")
     val structuredFormatting: StructuredFormatting,
 
-    val terms: List<Term>
+    val terms: List<Term>,
+
+    @SerializedName("place_id")
+    val placeId:String
 )
 
 

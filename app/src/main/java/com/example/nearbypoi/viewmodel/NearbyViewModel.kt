@@ -43,10 +43,12 @@ class NearbyViewModel @Inject constructor(val repository: NearbyRepository) : Vi
     )
     val latLng: StateFlow<LatLng?> get() = _latLng
 
-    fun getPlaceDetails() {
+
+
+    fun getPlaceDetails(placeId: String) {
         viewModelScope.launch {
             val placeDetail = async {
-                repository.placeDetailsJson(poi.value?.placeId!!)
+                repository.placeDetailsJson(placeId)
             }.await()
 
             if (placeDetail.isSuccessful) {
@@ -72,11 +74,16 @@ class NearbyViewModel @Inject constructor(val repository: NearbyRepository) : Vi
 
     fun onPOIChanged(poi: PointOfInterest) {
         _poi.value = poi
-        getPlaceDetails()
+        getPlaceDetails(poi.placeId)
+    }
+
+    fun onLatLngChanged(latLng:LatLng){
+        _latLng.value=latLng
     }
 
     fun onQueryStringChanged(queryString: String) {
         _queryString.value = queryString
         queryAutocomplete()
     }
+
 }

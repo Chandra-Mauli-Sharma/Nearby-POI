@@ -39,6 +39,7 @@ interface NearbyRepository {
     suspend fun queryAutocompleteJson(
         @Query("input") input: String,
         @Query("location") location: String,
+        @Query("radius") radius: String="1000",
         @Query("key") api_key: String= API_KEY
     ):Response<QueryDetail>
 
